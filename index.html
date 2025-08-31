@@ -2,24 +2,33 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   </head>
   <body>
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1; filterMinCF:0.001; filterBeta: 0.01" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: true" device-orientation-permission-ui="enabled: true">
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" renderer="colorManagement: true">
       
-      <a-assets>
-        <a-asset-item id="fireworksModel" src="./firework.glb"></a-asset-item>
-        <img id="messageImage" src="./message.png">
-      </a-assets>
-
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
         
-        <a-gltf-model src="#fireworksModel" position="0 0 0" scale="1 1 1" animation-mixer="clip: *; loop: repeat;"></a-gltf-model>
+        <a-gltf-model 
+            id="duck"
+            src="https://cdn.jsdelivr.net/gh/aframevr/aframe/examples/test/models/duck/duck.glb" 
+            position="0 -0.5 0" 
+            scale="0.3 0.3 0.3">
+        </a-gltf-model>
 
-        <a-image src="#messageImage" position="0 0.5 0" scale="2 1 2" material="transparent: true"></a-image>
+        <a-image 
+            src="./message.png?v=1" 
+            position="0 0.5 0" 
+            scale="1.5 0.75 1.5" 
+            material="transparent: true">
+        </a-image>
 
       </a-entity>
     </a-scene>
