@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AR Yka - Fireworks AR Card</title>
+  <title>AR 煙火卡 - Fireworks AR Card</title>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/supermedium/aframe-particleplayer-component@1.0.9/dist/aframe-particleplayer-component.min.js"></script>
@@ -50,14 +50,13 @@
 <body>
   <!-- Loading Screen -->
   <div id="loading">
-    <div>�-...</div>
-    <div style="margin-top: 10px; font-size: 12px;">�A1�_
-P</div>
+    <div>初始化中...</div>
+    <div style="margin-top: 10px; font-size: 12px;">請允許相機權限</div>
   </div>
   
   <!-- HUD Status -->
   <div id="hud">
-    �-...
+    初始化中...
   </div>
   
   <!-- A-Frame AR Scene -->
@@ -96,14 +95,12 @@ P</div>
       <!-- Greeting Text -->
       <a-text 
         id="greeting-text"
-        value="��@ź��!"
+        value="林秈瑀情人節快樂!"
         position="0 -0.5 0"
         align="center"
         color="white"
         font="kelsonsans"
         width="8"
-        geometry="primitive: plane; width: auto; height: auto"
-        material="color: black; opacity: 0.7"
         visible="false">
       </a-text>
     </a-entity>
@@ -146,7 +143,7 @@ P</div>
     }
     
     // Show loading screen
-    function showLoading(message = '�-...') {
+    function showLoading(message = '初始化中...') {
       loadingElement.querySelector('div').textContent = message;
       loadingElement.classList.remove('hidden');
     }
@@ -176,20 +173,20 @@ P</div>
           arSystem.el.addEventListener('arReady', function() {
             console.log('AR Ready');
             hideLoading();
-            updateHUD('AR 1���aG');
+            updateHUD('AR 就緒，請對準卡片');
           });
           
           arSystem.el.addEventListener('arError', function(event) {
             console.error('AR Error:', event.detail);
-            updateHUD('AR /��Ͱtb');
-            showLoading('AR �1W');
+            updateHUD('AR 錯誤，請重新整理頁面');
+            showLoading('AR 初始化失敗');
           });
           
           // Target detection events
           targetEntity.addEventListener('targetFound', function() {
             console.log('Target found!');
             isTargetFound = true;
-            updateHUD('�u,0� <�');
+            updateHUD('已偵測到目標 🎯');
             
             // Show fireworks and greeting
             fireworksEntity.setAttribute('visible', true);
@@ -206,7 +203,7 @@ P</div>
           targetEntity.addEventListener('targetLost', function() {
             console.log('Target lost!');
             isTargetFound = false;
-            updateHUD('�z1�Ͱ�');
+            updateHUD('目標遺失，請重新對準');
             
             // Hide elements
             fireworksEntity.setAttribute('visible', false);
@@ -216,8 +213,8 @@ P</div>
           
         } else {
           console.error('MindAR system not found');
-          updateHUD('MindAR �q*~0');
-          showLoading('�q	e1W');
+          updateHUD('MindAR 系統未找到');
+          showLoading('系統載入失敗');
         }
       });
       
@@ -229,10 +226,8 @@ P</div>
         })
         .catch(function(err) {
           console.error('Camera permission denied:', err);
-          updateHUD('�_
-P��U');
-          showLoading('�A1�_
-P&Ͱt');
+          updateHUD('相機權限被拒絕');
+          showLoading('請允許相機權限並重新整理');
         });
     });
     
