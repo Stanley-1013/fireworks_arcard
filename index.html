@@ -1,115 +1,260 @@
-<!DOCTYPE html><html lang="zh-Hant">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>專屬煙火 AR 卡片</title>
-  <!-- A-Frame & 最新 AR.js（保持新版，不降級） -->
-  $1
-  <!-- 🔧 THREE.Math 兼容性 shim：A-Frame 1.5 使用 THREE r158，舊版外掛仍呼叫 THREE.Math.generateUUID，因此在載入粒子外掛前先補上對應方法到 Math -->
-  <script>
-    (function(){
-      try {
-        if (window.THREE) {
-          // 確保有 THREE.Math 物件
-          if (!THREE.Math) THREE.Math = {};
-          // 若外掛呼叫的是舊的 Math.generateUUID，將其指到新的 MathUtils.generateUUID
-          if (!THREE.Math.generateUUID && THREE.MathUtils && THREE.MathUtils.generateUUID) {
-            THREE.Math.generateUUID = THREE.MathUtils.generateUUID;
-          }
-        }
-      } catch (e) { console.warn('THREE shim failed', e); }
-    })();
-  </script>
-  <!-- 粒子系統 -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe-particle-system-component@1.1.3/dist/aframe-particle-system-component.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AR Yka - Fireworks AR Card</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/supermedium/aframe-particleplayer-component@1.0.9/dist/aframe-particleplayer-component.min.js"></script>
   <style>
-    body { margin: 0; font-family: system-ui, -apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif; }
-    a-scene { position:absolute; inset:0; width:100%; height:100%; background:#000; }
-    .ui { position: fixed; inset: 0 0 auto 0; display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem; z-index: 10; pointer-events: none; }
-    .ui .card { pointer-events: auto; background: rgba(0,0,0,.55); color: #fff; padding: .5rem .75rem; border-radius: .75rem; backdrop-filter: blur(6px); }
-    .qr-tip { position: fixed; right: .75rem; bottom: .75rem; background: rgba(0,0,0,.55); color: #fff; padding: .5rem .75rem; border-radius: .75rem; font-size: .875rem; }
-    .link { color: #bdf; text-decoration: underline; }
-    #debug { position: fixed; left: .75rem; bottom: .75rem; background: rgba(0,0,0,.6); color: #fff; padding: .5rem .75rem; border-radius: .75rem; font-size: .85rem; z-index: 20; white-space: pre-line; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    #hud {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 1000;
+      text-align: center;
+    }
+    
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      z-index: 1001;
+      text-align: center;
+    }
+    
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <div class="ui">
-    <div class="card">
-      <div>🪄 <b>使用說明</b>：將「Hiro 標記」置於鏡頭前（可在另一台裝置顯示 <a class="link" href="https://jeromeetienne.github.io/AR.js/data/images/HIRO.jpg" target="_blank" rel="noopener">這張圖</a>），就會在標記上看到 3D 煙火與祝福文字。</div>
-    </div>
-    <div class="card">🎆 <b>祝福語</b>：<span id="wish">願你每天都能看到專屬的煙火！</span></div>
+  <!-- Loading Screen -->
+  <div id="loading">
+    <div>�-...</div>
+    <div style="margin-top: 10px; font-size: 12px;">�A1�_
+P</div>
   </div>
-  <div class="qr-tip">想自訂祝福：在網址後加 <code>?msg=你的話</code></div>
-  <div id="debug">⏳ 初始化中…</div><a-scene
-vr-mode-ui="enabled: false"
-embedded
-renderer="alpha: true; precision: mediump; antialias: true"
-arjs="trackingMethod: best; sourceType: webcam; facingMode: environment; debugUIEnabled: true;">
+  
+  <!-- HUD Status -->
+  <div id="hud">
+    �-...
+  </div>
+  
+  <!-- A-Frame AR Scene -->
+  <a-scene 
+    mindar-image="imageTargetSrc: ./assets/card.mind; filterMinCF: 0.0001; filterBeta: 0.01;" 
+    color-space="sRGB" 
+    renderer="colorManagement: true, physicallyCorrectLights: true"
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false">
+    
+    <!-- Assets -->
+    <a-assets>
+      <a-asset-item id="particlesJson" src="./assets/particles-fireworks.json"></a-asset-item>
+      <img id="particleTexture" src="./assets/sprite.png" crossorigin="anonymous">
+    </a-assets>
+    
+    <!-- Camera -->
+    <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable"></a-camera>
+    
+    <!-- AR Target -->
+    <a-entity mindar-image-target="targetIndex: 0" visible="false" id="target">
+      <!-- Fireworks Particle System -->
+      <a-entity 
+        id="fireworks"
+        particleplayer="
+          src: #particlesJson; 
+          texture: #particleTexture; 
+          loop: true;
+          scale: 1.0;
+          count: 100;
+        "
+        position="0 0.5 0"
+        visible="false">
+      </a-entity>
+      
+      <!-- Greeting Text -->
+      <a-text 
+        id="greeting-text"
+        value="��@ź��!"
+        position="0 -0.5 0"
+        align="center"
+        color="white"
+        font="kelsonsans"
+        width="8"
+        geometry="primitive: plane; width: auto; height: auto"
+        material="color: black; opacity: 0.7"
+        visible="false">
+      </a-text>
+    </a-entity>
+  </a-scene>
 
-<a-entity light="type: ambient; intensity: 1"></a-entity>
-<a-entity light="type: directional; intensity: .8" position="1 1 0"></a-entity>
-
-<a-marker preset="hiro">
-  <a-entity id="fw1" position="0 0 0" 
-    particle-system="preset: dust; color: #fff, #ffd166, #ef476f, #06d6a0, #118ab2; particleCount: 400; size: 2; maxAge: 1.6; velocityValue: 0 4 0; accelerationValue: 0 -3 0; enabled: true;">
-  </a-entity>
-  <a-entity id="fw2" position="0.6 0.2 0" 
-    particle-system="type: circle; color: #ffffff, #b5179e, #560bad; particleCount: 240; size: 1.6; maxAge: 1.2; velocityValue: 0 0 0; enabled: true;">
-  </a-entity>
-  <a-entity position="0 -0.25 0" rotation="-90 0 0" scale="0.4 0.4 0.4">
-    <a-text id="msg3d" value="Happy Fireworks!" color="#ffffff" align="center" anchor="center"></a-text>
-  </a-entity>
-</a-marker>
-
-<a-entity camera></a-entity>
-
-  </a-scene>  <script>
-    const $dbg = document.getElementById('debug');
-    const log = (m)=>{ console.log(m); if ($dbg) $dbg.textContent = String(m); };
-
-    // 主動要求相機權限，並在成功後讓 AR.js 直接使用同一個 stream
-    (async()=>{
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        log('✅ 相機權限已授予，等待 AR.js 使用相機…');
-        // 將 stream 掛到 window 方便 debug
-        window.__dbgStream = s;
-      } catch(err) {
-        console.error(err);
-        log('❌ 相機權限失敗: '+err.message);
-        alert('請在瀏覽器設定允許相機權限');
-      }
-    })();
-
-    // 自訂祝福
-    const params = new URLSearchParams(location.search);
-    const msg = (params.get('msg') || '').trim();
-    if (msg) {
-      document.getElementById('wish').textContent = msg;
-      document.getElementById('msg3d').setAttribute('value', msg);
+  <script>
+    // Global variables
+    let arSystem;
+    let targetEntity;
+    let fireworksEntity;
+    let greetingText;
+    let hudElement = document.getElementById('hud');
+    let loadingElement = document.getElementById('loading');
+    let isTargetFound = false;
+    
+    // Parse URL parameters for custom message
+    function getURLParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
     }
-
-    // 煙火觸發
-    const startBursts = () => {
-      try {
-        const fw1 = document.getElementById('fw1');
-        const fw2 = document.getElementById('fw2');
-        if (!fw1 || !fw2) return log('⚠️ 找不到煙火元件');
-        const burst = (el) => {
-          const cfg = el.getAttribute('particle-system') || '';
-          el.setAttribute('particle-system', cfg + '; enabled: false');
-          requestAnimationFrame(() => el.setAttribute('particle-system', cfg + '; enabled: true'));
-        };
-        setInterval(() => burst(fw1), 1500);
-        setInterval(() => burst(fw2), 2200);
-        log('✨ AR 就緒，開始煙火');
-      } catch (e) { console.error(e); log('⚠️ 初始化煙火失敗'); }
+    
+    // Update greeting text based on URL parameter
+    function updateGreetingText() {
+      const customMessage = getURLParameter('msg');
+      const greetingText = document.getElementById('greeting-text');
+      
+      if (customMessage) {
+        greetingText.setAttribute('value', decodeURIComponent(customMessage));
+      }
+    }
+    
+    // Update HUD status
+    function updateHUD(message) {
+      hudElement.textContent = message;
+    }
+    
+    // Hide loading screen
+    function hideLoading() {
+      loadingElement.classList.add('hidden');
+    }
+    
+    // Show loading screen
+    function showLoading(message = '�-...') {
+      loadingElement.querySelector('div').textContent = message;
+      loadingElement.classList.remove('hidden');
+    }
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Update greeting text from URL parameter
+      updateGreetingText();
+      
+      // Get references to entities
+      const sceneEl = document.querySelector('a-scene');
+      targetEntity = document.getElementById('target');
+      fireworksEntity = document.getElementById('fireworks');
+      greetingText = document.getElementById('greeting-text');
+      
+      // Wait for A-Frame to load
+      sceneEl.addEventListener('loaded', function() {
+        console.log('A-Frame scene loaded');
+        
+        // Initialize MindAR
+        arSystem = sceneEl.systems['mindar-image'];
+        
+        if (arSystem) {
+          console.log('MindAR system found');
+          
+          // MindAR events
+          arSystem.el.addEventListener('arReady', function() {
+            console.log('AR Ready');
+            hideLoading();
+            updateHUD('AR 1���aG');
+          });
+          
+          arSystem.el.addEventListener('arError', function(event) {
+            console.error('AR Error:', event.detail);
+            updateHUD('AR /��Ͱtb');
+            showLoading('AR �1W');
+          });
+          
+          // Target detection events
+          targetEntity.addEventListener('targetFound', function() {
+            console.log('Target found!');
+            isTargetFound = true;
+            updateHUD('�u,0� <�');
+            
+            // Show fireworks and greeting
+            fireworksEntity.setAttribute('visible', true);
+            greetingText.setAttribute('visible', true);
+            targetEntity.setAttribute('visible', true);
+            
+            // Start particle animation
+            const particlePlayer = fireworksEntity.components.particleplayer;
+            if (particlePlayer) {
+              particlePlayer.playAnimation();
+            }
+          });
+          
+          targetEntity.addEventListener('targetLost', function() {
+            console.log('Target lost!');
+            isTargetFound = false;
+            updateHUD('�z1�Ͱ�');
+            
+            // Hide elements
+            fireworksEntity.setAttribute('visible', false);
+            greetingText.setAttribute('visible', false);
+            targetEntity.setAttribute('visible', false);
+          });
+          
+        } else {
+          console.error('MindAR system not found');
+          updateHUD('MindAR �q*~0');
+          showLoading('�q	e1W');
+        }
+      });
+      
+      // Handle camera permission
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          console.log('Camera permission granted');
+          stream.getTracks().forEach(track => track.stop()); // Stop the stream as A-Frame will handle it
+        })
+        .catch(function(err) {
+          console.error('Camera permission denied:', err);
+          updateHUD('�_
+P��U');
+          showLoading('�A1�_
+P&Ͱt');
+        });
+    });
+    
+    // Debug functions (can be called from browser console)
+    window.debugAR = {
+      getTargetStatus: () => isTargetFound,
+      getARSystem: () => arSystem,
+      showFireworks: () => {
+        if (fireworksEntity) {
+          fireworksEntity.setAttribute('visible', true);
+          const particlePlayer = fireworksEntity.components.particleplayer;
+          if (particlePlayer) {
+            particlePlayer.playAnimation();
+          }
+        }
+      },
+      hideFireworks: () => {
+        if (fireworksEntity) {
+          fireworksEntity.setAttribute('visible', false);
+        }
+      }
     };
-
-    // Debug 事件
-    const scene = document.querySelector('a-scene');
-    scene.addEventListener('loaded', () => log('📦 A-Frame 場景載入完成'));
-    scene.addEventListener('arReady', () => { log('✨ AR.js 準備好了'); startBursts(); });
-    scene.addEventListener('arError', (e) => { console.error('⚠️ AR.js 初始化錯誤:', e); log('⚠️ AR.js 初始化錯誤'); });
-  </script></body>
+  </script>
+</body>
 </html>
