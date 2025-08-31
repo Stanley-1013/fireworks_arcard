@@ -8,55 +8,35 @@
 
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-    <script>
-      // 註冊一個新的 A-Frame 元件，叫做 "target-handler"
-      AFRAME.registerComponent('target-handler', {
-        init: function() {
-          // 元件初始化時，找到場景中主要的模型和文字
-          this.targetObject = document.querySelector('#target-object');
-          
-          // 監聽 "targetFound" 事件 (當辨識到圖片時)
-          this.el.addEventListener('targetFound', (event) => {
-            console.log("Target Found!");
-            // 讓主要的物件顯示出來
-            this.targetObject.setAttribute('visible', true);
-          });
-
-          // 監聽 "targetLost" 事件 (當圖片離開視線時)
-          this.el.addEventListener('targetLost', (event) => {
-            console.log("Target Lost!");
-            // 讓主要的物件隱藏起來
-            this.targetObject.setAttribute('visible', false);
-          });
-        }
-      });
-    </script>
   </head>
   <body>
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" renderer="colorManagement: true">
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" renderer="colorManagement: true; physicallyCorrectLights: true;">
       
+      <a-assets>
+        <a-asset-item id="fireworksModel" src="./fireworks.glb"></a-asset-item>
+        <img id="messageImage" src="./message.png">
+      </a-assets>
+
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0" target-handler>
-      </a-entity>
-
-      <a-entity id="target-object" visible="false">
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-entity light="type: ambient; color: #BBB"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 0.6; position: -0.5 1 1"></a-entity>
+        
         <a-gltf-model 
-          src="./fireworks.glb" 
+          src="#fireworksModel" 
           position="0 0 0" 
           scale="1 1 1" 
           animation-mixer="clip: *; loop: repeat;">
         </a-gltf-model>
 
         <a-image 
-          src="./message.png" 
+          src="#messageImage" 
           position="0 0.8 0" 
           scale="1.5 0.75 1.5" 
           material="transparent: true">
-        </a-a-image>
+        </a-image>
       </a-entity>
-
     </a-scene>
   </body>
 </html>
