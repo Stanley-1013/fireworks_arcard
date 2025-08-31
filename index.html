@@ -11,19 +11,11 @@
     <a-scene background="color: #000000">
 
         <a-assets>
-            <img id="card" src="./card.jpg">
             <img id="message" src="./message.png">
             <a-asset-item id="fireworks" src="./fireworks.glb"></a-asset-item>
         </a-assets>
-
-        <a-image 
-            id="trigger-card"
-            src="#card" 
-            position="0 1.6 -3" 
-            scale="1.2 1.2 1.2">
-        </a-image>
         
-        <a-entity id="result-group" position="0 1.6 -3" visible="false">
+        <a-entity id="result-group" position="0 1.6 -4" visible="true">
             <a-gltf-model 
                 src="#fireworks" 
                 scale="3 3 3" 
@@ -37,30 +29,7 @@
             </a-image>
         </a-entity>
         
-        <a-camera>
-            <a-cursor color="#FFF"></a-cursor>
-        </a-camera>
+        </a-scene>
 
-    </a-scene>
-
-    <script>
-        // 等待整個網頁載入完成
-        window.addEventListener('load', function () {
-            // 找到觸發卡片和結果群組
-            const triggerCard = document.querySelector('#trigger-card');
-            const resultGroup = document.querySelector('#result-group');
-
-            // 為觸發卡片加上一個點擊事件監聽器
-            triggerCard.addEventListener('click', function () {
-                console.log('Card clicked!');
-                
-                // 隱藏卡片
-                triggerCard.setAttribute('visible', 'false');
-                
-                // 顯示煙火和祝福語
-                resultGroup.setAttribute('visible', 'true');
-            });
-        });
-    </script>
-</body>
+    </body>
 </html>
