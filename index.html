@@ -4,188 +4,276 @@
     <meta charset="utf-8">
     <title>給秈瑀的驚喜</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <style>
-        body {
+        * {
             margin: 0;
-            background: #000;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(45deg, #000011, #001122);
             font-family: Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .ui {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .play-btn {
-            background: linear-gradient(45deg, #ff4081, #ff6ec7);
-            border: none;
-            padding: 15px 25px;
-            color: white;
-            font-size: 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 64, 129, 0.4);
-            transition: all 0.3s ease;
+        #fireworksVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease;
+            /* 如果是透明背景MP4，可以嘗試這些設定 */
+            mix-blend-mode: screen;
         }
         
-        .play-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 64, 129, 0.6);
+        #fireworksVideo.playing {
+            opacity: 1;
         }
         
         .message {
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 50;
+            z-index: 10;
             opacity: 0;
-            transition: opacity 1s ease;
+            transition: all 1s ease;
             pointer-events: none;
         }
         
         .message.show {
             opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
         }
         
         .message img {
-            max-width: 400px;
-            max-height: 300px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+            max-width: 80vw;
+            max-height: 60vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(255, 255, 255, 0.3);
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff4081, #ff6ec7);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 64, 129, 0.4);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 64, 129, 0.6);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .sparkles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkle 3s infinite;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        
+        .title {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            opacity: 0.9;
+            z-index: 15;
         }
     </style>
 </head>
 <body>
-    <div class="ui">
-        <button class="play-btn" id="playButton" onclick="startShow()" disabled>⏳ 載入中...</button>
-        <div id="loadingInfo" style="color: white; margin-top: 10px; font-size: 14px;">
-            正在載入煙火模型 (9.94MB)...
+    <div class="title">✨ 給秈瑀的驚喜 ✨</div>
+    
+    <div class="container">
+        <!-- 煙火影片 -->
+        <video 
+            id="fireworksVideo"
+            muted 
+            loop
+            preload="metadata">
+            <source src="./fireworks.webm" type="video/webm">
+            <source src="./fireworks.mp4" type="video/mp4">
+            你的瀏覽器不支援影片播放
+        </video>
+        
+        <!-- 祝福圖片 -->
+        <div class="message" id="messageDiv">
+            <img src="./message.png" alt="祝福語" />
         </div>
+        
+        <!-- 星星效果 -->
+        <div class="sparkles" id="sparklesContainer"></div>
     </div>
     
-    <div class="message" id="messageDiv">
-        <img src="./message.png" alt="祝福語" />
+    <div class="controls">
+        <button class="btn" id="playBtn" onclick="startShow()">🎆 開始煙火秀</button>
+        <button class="btn" onclick="toggleBlendMode()">🎨 切換混合模式</button>
     </div>
-    
-    <a-scene background="color: #001122" vr-mode-ui="enabled: false">
-        <a-assets>
-            <a-asset-item id="fireworksGLB" src="./fireworks.glb"></a-asset-item>
-        </a-assets>
-        
-        <!-- 光源設置 -->
-        <a-light type="ambient" color="#ffffff" intensity="0.4"></a-light>
-        <a-light type="directional" position="2 4 5" color="#ffffff" intensity="0.8"></a-light>
-        
-        <!-- 煙火模型 - 優化大檔案載入 -->
-        <a-gltf-model 
-            id="fireworksModel"
-            src="#fireworksGLB"
-            position="0 1 -4"
-            rotation="0 0 0"
-            scale="1.5 1.5 1.5"
-            animation-mixer="loop: repeat; clampWhenFinished: false"
-            visible="false">
-        </a-gltf-model>
-        
-        <!-- 攝影機 -->
-        <a-entity 
-            id="cameraRig" 
-            position="0 1.6 0">
-            <a-camera 
-                look-controls="enabled: true"
-                wasd-controls="enabled: false">
-            </a-camera>
-        </a-entity>
-    </a-scene>
 
     <script>
         let isPlaying = false;
+        const video = document.querySelector('#fireworksVideo');
+        const messageDiv = document.querySelector('#messageDiv');
+        const playBtn = document.querySelector('#playBtn');
         
+        // 創建星星效果
+        function createSparkles() {
+            const container = document.querySelector('#sparklesContainer');
+            
+            for (let i = 0; i < 20; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(sparkle);
+            }
+        }
+        
+        // 開始煙火秀
         function startShow() {
             if (isPlaying) return;
             
-            const fireworks = document.querySelector('#fireworksModel');
-            const button = document.querySelector('.play-btn');
-            const messageDiv = document.querySelector('#messageDiv');
-            
-            // 顯示煙火
-            fireworks.setAttribute('visible', true);
-            
-            // 更新按鈕
-            button.textContent = '🎇 煙火進行中...';
-            button.disabled = true;
             isPlaying = true;
+            playBtn.textContent = '🎇 播放中...';
+            playBtn.disabled = true;
+            
+            // 播放影片
+            video.classList.add('playing');
+            video.play().catch(e => {
+                console.error('影片播放失敗:', e);
+                alert('影片播放失敗，請確認 fireworks.mp4 檔案存在');
+                resetShow();
+                return;
+            });
             
             // 2秒後顯示祝福語
             setTimeout(() => {
                 messageDiv.classList.add('show');
             }, 2000);
             
-            // 8秒後重置
+            // 6秒後結束
             setTimeout(() => {
-                reset();
-            }, 8000);
+                endShow();
+            }, 6000);
             
-            console.log('煙火秀開始！');
+            console.log('🎆 煙火秀開始！');
         }
         
-        function reset() {
-            const fireworks = document.querySelector('#fireworksModel');
-            const button = document.querySelector('.play-btn');
-            const messageDiv = document.querySelector('#messageDiv');
+        // 結束煙火秀
+        function endShow() {
+            playBtn.textContent = '✨ 煙火秀結束';
+            playBtn.disabled = false;
             
-            fireworks.setAttribute('visible', false);
+            setTimeout(() => {
+                playBtn.textContent = '🎆 再次播放';
+            }, 2000);
+        }
+        
+        // 重新播放
+        function playAgain() {
+            resetShow();
+            setTimeout(startShow, 500);
+        }
+        
+        // 重置場景
+        function resetShow() {
+            video.classList.remove('playing');
+            video.pause();
+            video.currentTime = 0;
             messageDiv.classList.remove('show');
             
-            button.textContent = '🎆 再次播放';
-            button.disabled = false;
+            playBtn.textContent = '🎆 開始煙火秀';
+            playBtn.disabled = false;
             isPlaying = false;
-            
-            console.log('煙火秀結束，可以重新播放');
         }
         
-        // 監聽模型載入事件
-        document.querySelector('#fireworksModel').addEventListener('model-loaded', function() {
-            console.log('✅ 煙火模型載入成功');
-            
-            // 啟用播放按鈕
-            const button = document.querySelector('#playButton');
-            const loadingInfo = document.querySelector('#loadingInfo');
-            
-            button.disabled = false;
-            button.textContent = '🎆 開始煙火秀';
-            loadingInfo.textContent = '模型載入完成！點擊開始播放';
-            loadingInfo.style.color = '#4CAF50';
+        // 影片事件監聽
+        video.addEventListener('loadeddata', () => {
+            console.log('✅ 煙火影片載入完成');
         });
         
-        document.querySelector('#fireworksModel').addEventListener('model-error', function(event) {
-            console.error('❌ 煙火模型載入失敗:', event.detail);
-            
-            const button = document.querySelector('#playButton');
-            const loadingInfo = document.querySelector('#loadingInfo');
-            
-            button.textContent = '❌ 載入失敗';
-            loadingInfo.textContent = '模型載入失敗 - 檔案可能太大或格式有問題';
-            loadingInfo.style.color = '#f44336';
-            
-            alert('煙火模型載入失敗！可能原因：\n1. 檔案太大 (9.94MB)\n2. 檔案路徑錯誤\n3. GLB 檔案格式問題');
+        video.addEventListener('error', (e) => {
+            console.error('❌ 影片載入失敗:', e);
+            playBtn.textContent = '❌ 影片載入失敗';
+            alert('找不到 fireworks.mp4 檔案，請確認檔案在正確位置');
         });
         
-        // 載入進度監控
-        let loadStartTime = Date.now();
-        setInterval(() => {
-            if (!document.querySelector('#playButton').disabled) return;
-            
-            let elapsed = Math.floor((Date.now() - loadStartTime) / 1000);
-            let loadingInfo = document.querySelector('#loadingInfo');
-            if (loadingInfo && elapsed > 0) {
-                loadingInfo.textContent = `載入中... ${elapsed}秒 (大檔案需要更長時間)`;
+        video.addEventListener('ended', () => {
+            console.log('影片播放結束');
+        });
+        
+        // 初始化星星效果
+        createSparkles();
+        
+        // 鍵盤控制
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!isPlaying) {
+                    startShow();
+                }
             }
-        }, 1000);
+        });
     </script>
 </body>
 </html>
