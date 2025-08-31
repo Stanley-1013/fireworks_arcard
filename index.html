@@ -1,121 +1,158 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
     <meta charset="utf-8">
     <title>給秈瑀的驚喜</title>
-    <meta name="description" content="A special fireworks card.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
             background: #000;
+            font-family: Arial, sans-serif;
         }
         
-        .controls {
+        .ui {
             position: fixed;
             top: 20px;
             left: 20px;
-            z-index: 1000;
+            z-index: 100;
         }
         
-        .btn {
-            padding: 10px 20px;
-            background: #ff6b6b;
+        .play-btn {
+            background: linear-gradient(45deg, #ff4081, #ff6ec7);
             border: none;
-            border-radius: 5px;
+            padding: 15px 25px;
             color: white;
+            font-size: 16px;
+            border-radius: 30px;
             cursor: pointer;
-            font-weight: bold;
-            margin-right: 10px;
+            box-shadow: 0 4px 15px rgba(255, 64, 129, 0.4);
+            transition: all 0.3s ease;
         }
         
-        .btn:hover {
-            background: #ff5252;
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 64, 129, 0.6);
+        }
+        
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+        
+        .message.show {
+            opacity: 1;
+        }
+        
+        .message img {
+            max-width: 400px;
+            max-height: 300px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <button class="btn" onclick="toggleFireworks()">🎆 播放/暫停煙火</button>
-        <button class="btn" onclick="showMessage()">💝 顯示祝福</button>
+    <div class="ui">
+        <button class="play-btn" onclick="startShow()">🎆 開始煙火秀</button>
     </div>
-
-    <a-scene 
-        background="color: #000022" 
-        vr-mode-ui="enabled: false">
-        
+    
+    <div class="message" id="messageDiv">
+        <img src="./message.png" alt="祝福語" />
+    </div>
+    
+    <a-scene background="color: #001122" vr-mode-ui="enabled: false">
         <a-assets>
-            <img id="message" src="./message.png">
-            <a-asset-item id="fireworks-model" src="./fireworks.glb"></a-asset-item>
+            <a-asset-item id="fireworksGLB" src="./fireworks.glb"></a-asset-item>
         </a-assets>
         
-        <!-- 基本光源 -->
-        <a-light type="ambient" color="#ffffff" intensity="0.5"></a-light>
-        <a-light type="directional" position="0 1 0" color="#ffffff" intensity="0.5"></a-light>
+        <!-- 光源設置 -->
+        <a-light type="ambient" color="#ffffff" intensity="0.4"></a-light>
+        <a-light type="directional" position="2 4 5" color="#ffffff" intensity="0.8"></a-light>
         
-        <!-- 煙火模型 - 簡化設置 -->
+        <!-- 煙火模型 -->
         <a-gltf-model 
-            id="fireworks"
-            src="#fireworks-model" 
-            position="0 0 -3"
-            scale="1 1 1"
-            animation-mixer="clip: *; loop: repeat"
-            visible="true">
+            id="fireworksModel"
+            src="#fireworksGLB"
+            position="0 1 -4"
+            rotation="0 0 0"
+            scale="2 2 2"
+            animation-mixer="loop: repeat; clampWhenFinished: false"
+            visible="false">
         </a-gltf-model>
         
-        <!-- 祝福圖片 -->
-        <a-image 
-            id="blessing-message"
-            src="#message" 
-            position="0 2 -3" 
-            scale="2 1 1" 
-            material="transparent: true"
-            visible="false">
-        </a-image>
-        
-        <!-- 簡單相機 -->
-        <a-camera 
-            position="0 1.6 0"
-            look-controls="enabled: true">
-        </a-camera>
-        
+        <!-- 攝影機 -->
+        <a-entity 
+            id="cameraRig" 
+            position="0 1.6 0">
+            <a-camera 
+                look-controls="enabled: true"
+                wasd-controls="enabled: false">
+            </a-camera>
+        </a-entity>
     </a-scene>
 
     <script>
-        let fireworksVisible = true;
-        let messageVisible = false;
+        let isPlaying = false;
         
-        function toggleFireworks() {
-            const fireworks = document.querySelector('#fireworks');
-            fireworksVisible = !fireworksVisible;
-            fireworks.setAttribute('visible', fireworksVisible);
+        function startShow() {
+            if (isPlaying) return;
             
-            console.log('煙火顯示狀態:', fireworksVisible);
+            const fireworks = document.querySelector('#fireworksModel');
+            const button = document.querySelector('.play-btn');
+            const messageDiv = document.querySelector('#messageDiv');
+            
+            // 顯示煙火
+            fireworks.setAttribute('visible', true);
+            
+            // 更新按鈕
+            button.textContent = '🎇 煙火進行中...';
+            button.disabled = true;
+            isPlaying = true;
+            
+            // 2秒後顯示祝福語
+            setTimeout(() => {
+                messageDiv.classList.add('show');
+            }, 2000);
+            
+            // 8秒後重置
+            setTimeout(() => {
+                reset();
+            }, 8000);
+            
+            console.log('煙火秀開始！');
         }
         
-        function showMessage() {
-            const message = document.querySelector('#blessing-message');
-            messageVisible = !messageVisible;
-            message.setAttribute('visible', messageVisible);
+        function reset() {
+            const fireworks = document.querySelector('#fireworksModel');
+            const button = document.querySelector('.play-btn');
+            const messageDiv = document.querySelector('#messageDiv');
             
-            console.log('祝福語顯示狀態:', messageVisible);
+            fireworks.setAttribute('visible', false);
+            messageDiv.classList.remove('show');
+            
+            button.textContent = '🎆 再次播放';
+            button.disabled = false;
+            isPlaying = false;
+            
+            console.log('煙火秀結束，可以重新播放');
         }
         
-        // 檢查模型載入狀態
-        document.querySelector('#fireworks').addEventListener('model-loaded', () => {
+        // 監聽模型載入事件
+        document.querySelector('#fireworksModel').addEventListener('model-loaded', function() {
             console.log('✅ 煙火模型載入成功');
         });
         
-        document.querySelector('#fireworks').addEventListener('model-error', (e) => {
-            console.error('❌ 煙火模型載入失敗:', e.detail);
-            alert('煙火模型載入失敗，請檢查 fireworks.glb 檔案是否存在於正確位置');
-        });
-        
-        // 檢查圖片載入
-        document.querySelector('#blessing-message').addEventListener('materialtextureloaded', () => {
-            console.log('✅ 祝福圖片載入成功');
+        document.querySelector('#fireworksModel').addEventListener('model-error', function(event) {
+            console.error('❌ 煙火模型載入失敗:', event.detail);
+            alert('找不到 fireworks.glb 檔案，請確認檔案在正確位置');
         });
     </script>
 </body>
