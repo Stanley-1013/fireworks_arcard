@@ -32,14 +32,14 @@
         
         #fireworksVideo {
             width: 100%;
-            height: 40%;
+            height: 35%;
             object-fit: cover;
             opacity: 0;
             transition: opacity 1s ease;
             /* 如果是透明背景MP4，可以嘗試這些設定 */
             mix-blend-mode: screen;
             position: absolute;
-            top: 30%;
+            top: 15%;
             left: 0;
         }
         
@@ -73,37 +73,47 @@
         
         .controls {
             position: fixed;
-            bottom: 30px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
             display: flex;
-            gap: 15px;
+            gap: 20px;
         }
         
         .btn {
-            padding: 15px 30px;
-            background: linear-gradient(45deg, #ff4081, #ff6ec7);
-            border: none;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 50px;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 300;
             cursor: pointer;
-            box-shadow: 0 8px 25px rgba(255, 64, 129, 0.4);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(255, 64, 129, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+            transition: all 0.1s ease;
         }
         
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            background: rgba(255, 255, 255, 0.05);
         }
         
         .sparkles {
@@ -131,15 +141,16 @@
         
         .title {
             position: fixed;
-            top: 30px;
+            top: 40px;
             left: 50%;
             transform: translateX(-50%);
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 20px;
+            font-weight: 300;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            opacity: 0.95;
             z-index: 15;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -168,8 +179,8 @@
     </div>
     
     <div class="controls">
-        <button class="btn" id="playBtn" onclick="startShow()">🎆 開始煙火秀</button>
-        <button class="btn" onclick="toggleBlendMode()">🎨 切換混合模式</button>
+        <button class="btn" id="playBtn" onclick="startShow()">開始</button>
+        <button class="btn" onclick="toggleBlendMode()">混合模式</button>
     </div>
 
     <script>
@@ -197,7 +208,7 @@
             if (isPlaying) return;
             
             isPlaying = true;
-            playBtn.textContent = '🎇 播放中...';
+            playBtn.textContent = '播放中...';
             playBtn.disabled = true;
             
             // 播放影片
@@ -224,11 +235,11 @@
         
         // 結束煙火秀
         function endShow() {
-            playBtn.textContent = '✨ 煙火秀結束';
+            playBtn.textContent = '結束';
             playBtn.disabled = false;
             
             setTimeout(() => {
-                playBtn.textContent = '🎆 再次播放';
+                playBtn.textContent = '再次播放';
             }, 2000);
         }
         
@@ -258,7 +269,7 @@
             video.currentTime = 0;
             messageDiv.classList.remove('show');
             
-            playBtn.textContent = '🎆 開始煙火秀';
+            playBtn.textContent = '開始';
             playBtn.disabled = false;
             isPlaying = false;
         }
