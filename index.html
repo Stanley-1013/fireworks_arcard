@@ -32,12 +32,15 @@
         
         #fireworksVideo {
             width: 100%;
-            height: 100%;
+            height: 60%;
             object-fit: cover;
             opacity: 0;
             transition: opacity 1s ease;
             /* 如果是透明背景MP4，可以嘗試這些設定 */
             mix-blend-mode: screen;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         
         #fireworksVideo.playing {
@@ -46,7 +49,7 @@
         
         .message {
             position: absolute;
-            top: 50%;
+            top: 65%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
@@ -61,8 +64,8 @@
         }
         
         .message img {
-            max-width: 80vw;
-            max-height: 60vh;
+            max-width: 90vw;
+            max-height: 30vh;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(255, 255, 255, 0.3);
             filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
@@ -227,6 +230,19 @@
             setTimeout(() => {
                 playBtn.textContent = '🎆 再次播放';
             }, 2000);
+        }
+        
+        // 切換混合模式（用於透明背景影片）
+        function toggleBlendMode() {
+            const currentMode = video.style.mixBlendMode;
+            
+            if (currentMode === 'screen') {
+                video.style.mixBlendMode = 'normal';
+                console.log('切換到一般模式');
+            } else {
+                video.style.mixBlendMode = 'screen';
+                console.log('切換到透明混合模式');
+            }
         }
         
         // 重新播放
