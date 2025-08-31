@@ -61,7 +61,10 @@
 </head>
 <body>
     <div class="ui">
-        <button class="play-btn" onclick="startShow()">🎆 開始煙火秀</button>
+        <button class="play-btn" id="playButton" onclick="startShow()" disabled>⏳ 載入中...</button>
+        <div id="loadingInfo" style="color: white; margin-top: 10px; font-size: 14px;">
+            正在載入煙火模型 (9.94MB)...
+        </div>
     </div>
     
     <div class="message" id="messageDiv">
@@ -77,13 +80,13 @@
         <a-light type="ambient" color="#ffffff" intensity="0.4"></a-light>
         <a-light type="directional" position="2 4 5" color="#ffffff" intensity="0.8"></a-light>
         
-        <!-- 煙火模型 -->
+        <!-- 煙火模型 - 優化大檔案載入 -->
         <a-gltf-model 
             id="fireworksModel"
             src="#fireworksGLB"
             position="0 1 -4"
             rotation="0 0 0"
-            scale="2 2 2"
+            scale="1.5 1.5 1.5"
             animation-mixer="loop: repeat; clampWhenFinished: false"
             visible="false">
         </a-gltf-model>
@@ -148,12 +151,41 @@
         // 監聽模型載入事件
         document.querySelector('#fireworksModel').addEventListener('model-loaded', function() {
             console.log('✅ 煙火模型載入成功');
+            
+            // 啟用播放按鈕
+            const button = document.querySelector('#playButton');
+            const loadingInfo = document.querySelector('#loadingInfo');
+            
+            button.disabled = false;
+            button.textContent = '🎆 開始煙火秀';
+            loadingInfo.textContent = '模型載入完成！點擊開始播放';
+            loadingInfo.style.color = '#4CAF50';
         });
         
         document.querySelector('#fireworksModel').addEventListener('model-error', function(event) {
             console.error('❌ 煙火模型載入失敗:', event.detail);
-            alert('找不到 fireworks.glb 檔案，請確認檔案在正確位置');
+            
+            const button = document.querySelector('#playButton');
+            const loadingInfo = document.querySelector('#loadingInfo');
+            
+            button.textContent = '❌ 載入失敗';
+            loadingInfo.textContent = '模型載入失敗 - 檔案可能太大或格式有問題';
+            loadingInfo.style.color = '#f44336';
+            
+            alert('煙火模型載入失敗！可能原因：\n1. 檔案太大 (9.94MB)\n2. 檔案路徑錯誤\n3. GLB 檔案格式問題');
         });
+        
+        // 載入進度監控
+        let loadStartTime = Date.now();
+        setInterval(() => {
+            if (!document.querySelector('#playButton').disabled) return;
+            
+            let elapsed = Math.floor((Date.now() - loadStartTime) / 1000);
+            let loadingInfo = document.querySelector('#loadingInfo');
+            if (loadingInfo && elapsed > 0) {
+                loadingInfo.textContent = `載入中... ${elapsed}秒 (大檔案需要更長時間)`;
+            }
+        }, 1000);
     </script>
 </body>
 </html>
