@@ -1,42 +1,66 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
+<head>
+    <meta charset="utf-8">
+    <title>給秈瑀的驚喜</title>
+    <meta name="description" content="A special fireworks card.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  </head>
-  <body>
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" renderer="colorManagement: true; physicallyCorrectLights: true;">
-      
-      <a-assets>
-        <a-asset-item id="fireworksModel" src="./fireworks.glb"></a-asset-item>
-        <img id="messageImage" src="./message.png">
-      </a-assets>
+</head>
+<body>
+    <a-scene background="color: #000000">
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-entity light="type: ambient; color: #BBB"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="-0.5 1 1"></a-entity>
-        
-        <a-gltf-model 
-          src="#fireworksModel" 
-          position="0 0 0" 
-          scale="1 1 1" 
-          animation-mixer="clip: *; loop: repeat;">
-        </a-gltf-model>
+        <a-assets>
+            <img id="card" src="./card.jpg">
+            <img id="message" src="./message.png">
+            <a-asset-item id="fireworks" src="./fireworks.glb"></a-asset-item>
+        </a-assets>
 
         <a-image 
-          src="#messageImage" 
-          position="0 0.8 0" 
-          scale="1.5 0.75 1.5" 
-          material="transparent: true">
+            id="trigger-card"
+            src="#card" 
+            position="0 1.6 -3" 
+            scale="1.2 1.2 1.2">
         </a-image>
-      </a-entity>
+        
+        <a-entity id="result-group" position="0 1.6 -3" visible="false">
+            <a-gltf-model 
+                src="#fireworks" 
+                scale="3 3 3" 
+                animation-mixer="clip: *; loop: repeat;">
+            </a-gltf-model>
+            <a-image 
+                src="#message" 
+                position="0 1 0" 
+                scale="2 1 2" 
+                material="transparent: true">
+            </a-image>
+        </a-entity>
+        
+        <a-camera>
+            <a-cursor color="#FFF"></a-cursor>
+        </a-camera>
+
     </a-scene>
-  </body>
+
+    <script>
+        // 等待整個網頁載入完成
+        window.addEventListener('load', function () {
+            // 找到觸發卡片和結果群組
+            const triggerCard = document.querySelector('#trigger-card');
+            const resultGroup = document.querySelector('#result-group');
+
+            // 為觸發卡片加上一個點擊事件監聽器
+            triggerCard.addEventListener('click', function () {
+                console.log('Card clicked!');
+                
+                // 隱藏卡片
+                triggerCard.setAttribute('visible', 'false');
+                
+                // 顯示煙火和祝福語
+                resultGroup.setAttribute('visible', 'true');
+            });
+        });
+    </script>
+</body>
 </html>
